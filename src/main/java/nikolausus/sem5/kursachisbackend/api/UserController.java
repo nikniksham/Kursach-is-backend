@@ -2,6 +2,7 @@ package nikolausus.sem5.kursachisbackend.api;
 
 import nikolausus.sem5.kursachisbackend.entity.User;
 import nikolausus.sem5.kursachisbackend.service.UserService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,6 +15,16 @@ public class UserController {
 
     public UserController(UserService userService) {
         this.userService = userService;
+    }
+
+    @GetMapping("/assignRole/{roleId}/{userId}")
+    public ResponseEntity<String> assignRoleToUser(@PathVariable Long userId, @PathVariable Long roleId) {
+        try {
+            userService.assignRoleToUser(userId, roleId);
+        } catch (Exception e) {
+            return ResponseEntity.ok(e.getMessage());
+        }
+        return ResponseEntity.ok("Роль успешно добавлена");
     }
 
     @GetMapping

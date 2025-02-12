@@ -23,7 +23,7 @@ public class Applications {
     @ManyToOne
     @JoinColumn(name = "roles_id", referencedColumnName = "id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private Roles roles;
+    private Role roles;
 
     @ManyToOne
     @JoinColumn(name = "status_applications_id", referencedColumnName = "id")
