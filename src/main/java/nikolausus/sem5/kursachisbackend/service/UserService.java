@@ -27,8 +27,12 @@ public class UserService {
         return userRepository.findByLogin(login);
     }
 
-    public User saveUser(User user) {
-        return userRepository.save(user);
+    public boolean saveUser(User user) {
+        if (userRepository.existsByLogin(user.getLogin())) {
+            return false;
+        }
+        userRepository.save(user);
+        return true;
     }
 
     public void deleteUserById(Long id) {

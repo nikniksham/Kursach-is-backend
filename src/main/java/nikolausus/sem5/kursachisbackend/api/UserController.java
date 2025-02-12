@@ -32,8 +32,7 @@ public class UserController {
     }
 
     @PostMapping
-    public User createUser(@RequestBody User user) {
-        System.out.println(user.getLogin());
+    public boolean createUser(@RequestBody User user) {
         return userService.saveUser(user);
     }
 
