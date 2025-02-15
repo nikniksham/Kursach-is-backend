@@ -1,7 +1,6 @@
 package nikolausus.sem5.kursachisbackend.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,6 +28,5 @@ public class User {
             joinColumns = @JoinColumn(name = "users_id"),  // FK на User
             inverseJoinColumns = @JoinColumn(name = "roles_id") // FK на Role
     )
-    @JsonManagedReference
     private Set<Role> roles;
 }

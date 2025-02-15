@@ -2,10 +2,7 @@ package nikolausus.sem5.kursachisbackend.api;
 
 import nikolausus.sem5.kursachisbackend.entity.Role;
 import nikolausus.sem5.kursachisbackend.service.RoleService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,13 +16,13 @@ public class RoleController {
         this.roleService = roleService;
     }
 
-    @GetMapping
+    @GetMapping("/all")
     public List<Role> getAllRoles() {
         return roleService.getAllRoles();
     }
 
-    @GetMapping("/{id}")
-    public Optional<Role> getRoleById(@PathVariable Long id) {
+    @GetMapping
+    public Optional<Role> getRoleById(@RequestParam Long id) {
         return roleService.getRoleById(id);
     }
 }

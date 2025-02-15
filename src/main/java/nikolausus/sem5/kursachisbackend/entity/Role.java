@@ -1,7 +1,6 @@
 package nikolausus.sem5.kursachisbackend.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,7 +19,7 @@ public class Role {
     @Column(nullable = false, length = 64)
     private String name;
 
+    @JsonIgnore  // Теперь Role не содержит User, но User содержит Role
     @ManyToMany(mappedBy = "roles")
-    @JsonBackReference
     private Set<User> users;
 }

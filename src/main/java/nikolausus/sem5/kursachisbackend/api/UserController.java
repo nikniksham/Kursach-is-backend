@@ -17,8 +17,8 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/assignRole/{roleId}/{userId}")
-    public ResponseEntity<String> assignRoleToUser(@PathVariable Long userId, @PathVariable Long roleId) {
+    @GetMapping("/assignRole")
+    public ResponseEntity<String> assignRoleToUser(@RequestParam Long userId, @RequestParam Long roleId) {
         try {
             userService.assignRoleToUser(userId, roleId);
         } catch (Exception e) {
@@ -27,13 +27,13 @@ public class UserController {
         return ResponseEntity.ok("Роль успешно добавлена");
     }
 
-    @GetMapping
+    @GetMapping("/all")
     public List<User> getAllUsers() {
         return userService.getAllUsers();
     }
 
-    @GetMapping("/id/{id}")
-    public Optional<User> getUserById(@PathVariable Long id) {
+    @GetMapping
+    public Optional<User> getUserById(@RequestParam Long id) {
         return userService.getUserById(id);
     }
 
@@ -42,13 +42,13 @@ public class UserController {
         return userService.getUserByLogin(login);
     }
 
-    @PostMapping
+    @PostMapping("/createUser")
     public boolean createUser(@RequestBody User user) {
         return userService.saveUser(user);
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteUser(@PathVariable Long id) {
+    @DeleteMapping
+    public void deleteUser(@RequestParam Long id) {
         userService.deleteUserById(id);
     }
 }
