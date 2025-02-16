@@ -43,6 +43,9 @@ public class AuthController {
 
     @PostMapping("/register")
     public String registerUser(@RequestBody User user) {
+        if (userRepository.existsByLogin(user.getLogin())) {
+            throw new RuntimeException("Логин занят");
+        }
         Role userRole = roleRepository.findByName("simple").orElseThrow(() -> new RuntimeException("Не смог найти роль simple"));
         user.setRoles(Collections.singleton(userRole));
         user.setPassword(passwordEncoder.encode(user.getPassword()));
