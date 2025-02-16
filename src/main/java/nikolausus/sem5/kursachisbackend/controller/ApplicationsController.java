@@ -1,4 +1,4 @@
-package nikolausus.sem5.kursachisbackend.api;
+package nikolausus.sem5.kursachisbackend.controller;
 
 import nikolausus.sem5.kursachisbackend.entity.Applications;
 import nikolausus.sem5.kursachisbackend.service.ApplicationsService;
@@ -24,15 +24,5 @@ public class ApplicationsController {
     @GetMapping
     public Optional<Applications> getApplicationsById(@RequestParam Long id) {
         return applicationsService.getApplicationsById(id);
-    }
-
-    @PostMapping
-    public boolean createApplications(@RequestBody Applications applications) {
-        return applicationsService.saveApplications(applications);
-    }
-
-    @DeleteMapping
-    public boolean deleteApplicationsById(@RequestParam Long id) {
-        return applicationsService.deleteApplicationsById(id);
     }
 }

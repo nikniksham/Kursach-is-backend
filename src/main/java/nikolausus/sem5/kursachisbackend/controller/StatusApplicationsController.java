@@ -1,4 +1,4 @@
-package nikolausus.sem5.kursachisbackend.api;
+package nikolausus.sem5.kursachisbackend.controller;
 
 import nikolausus.sem5.kursachisbackend.entity.StatusApplications;
 import nikolausus.sem5.kursachisbackend.service.StatusApplicationsService;

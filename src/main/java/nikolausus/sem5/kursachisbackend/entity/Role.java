@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Set;
 
@@ -11,7 +12,7 @@ import java.util.Set;
 @Setter
 @Entity
 @Table(name="roles")
-public class Role {
+public class Role implements GrantedAuthority {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -22,4 +23,9 @@ public class Role {
     @JsonIgnore  // Теперь Role не содержит User, но User содержит Role
     @ManyToMany(mappedBy = "roles")
     private Set<User> users;
+
+    @Override
+    public String getAuthority() {
+        return name;
+    }
 }

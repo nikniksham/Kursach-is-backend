@@ -4,19 +4,51 @@ import nikolausus.sem5.kursachisbackend.entity.Role;
 import nikolausus.sem5.kursachisbackend.entity.User;
 import nikolausus.sem5.kursachisbackend.repository.RoleRepository;
 import nikolausus.sem5.kursachisbackend.repository.UserRepository;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, RoleRepository roleRepository) {
+
+    public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    public User registerUser(String login, String rawPassword) {
+        if (userRepository.findByLogin(login).isPresent()) {
+            throw new RuntimeException("Логин уже занят");
+        }
+
+        Role simpleRole = roleRepository.findByName("simple")
+                .orElseGet(() -> {
+                    Role newRole = new Role();
+                    newRole.setName("simple");
+                    return roleRepository.save(newRole);
+                });
+
+        User user = new User();
+        user.setLogin(login);
+        user.setPassword(passwordEncoder.encode(rawPassword)); // 👈 Хешируем пароль!
+        // Добавляем роль "simple" пользователю
+        Set<Role> roles = new HashSet<>();
+        roles.add(simpleRole);
+        user.setRoles(roles);
+
+        return userRepository.save(user);
     }
 
     public void assignRoleToUser(Long userId, Long roleId) {
@@ -38,18 +70,6 @@ public class UserService {
 
     public Optional<User> getUserById(Long id) {
         return userRepository.findById(id);
-    }
-
-    public User getUserByLogin(String login) {
-        return userRepository.findByLogin(login);
-    }
-
-    public boolean saveUser(User user) {
-        if (userRepository.existsByLogin(user.getLogin())) {
-            return false;
-        }
-        userRepository.save(user);
-        return true;
     }
 
     public void deleteUserById(Long id) {
