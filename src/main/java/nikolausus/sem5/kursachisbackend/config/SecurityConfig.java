@@ -34,18 +34,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
                 .cors().and()
                 .csrf().disable()
                 .authorizeHttpRequests()
                 .requestMatchers("/api/auth/register", "/api/auth/authenticate").permitAll() // Разрешаем доступ к регистрации и аутентификации
-                .requestMatchers("/user/**").hasRole("simple")
-                .requestMatchers("/admin/**").hasRole("admin")
+                .requestMatchers("/api/user/**").hasRole("SIMPLE")
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
                 .and()
+                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS); // Отключаем сессии
-
-        http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

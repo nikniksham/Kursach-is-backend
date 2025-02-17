@@ -44,6 +44,7 @@ public class AdminController {
 
     @GetMapping("/hello")
     public String adminHello() {
+        System.out.println("Запрос к админу");
         return "Hello, Admin!";
     }
 }
