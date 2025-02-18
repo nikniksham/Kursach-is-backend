@@ -16,19 +16,9 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/all")
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
-    }
-
-    @GetMapping
-    public Optional<User> getUserById(@RequestParam Long id) {
-        return userService.getUserById(id);
-    }
-
     @GetMapping("/hello")
     public String userHello() {
-        System.out.println("Запрос к юзеру");
+//        System.out.println("Запрос к юзеру");
         return "Hello, User!";
     }
 }

@@ -54,9 +54,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                     .collect(Collectors.toList());
 
             if (jwtUtil.validateToken(jwt, userDetails)) {
-                for (GrantedAuthority grantedAuthority : authorities) {
-                    System.out.println("Role -> " + grantedAuthority);
-                }
+//                for (GrantedAuthority grantedAuthority : authorities) {
+//                    System.out.println("Role -> " + grantedAuthority);
+//                }
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
                         new UsernamePasswordAuthenticationToken(userDetails, null, authorities); // Используем роли из токена
                 usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

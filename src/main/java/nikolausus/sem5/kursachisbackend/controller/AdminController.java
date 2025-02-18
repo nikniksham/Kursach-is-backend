@@ -1,10 +1,13 @@
 package nikolausus.sem5.kursachisbackend.controller;
 
 import nikolausus.sem5.kursachisbackend.entity.Applications;
+import nikolausus.sem5.kursachisbackend.entity.User;
 import nikolausus.sem5.kursachisbackend.service.ApplicationsService;
 import nikolausus.sem5.kursachisbackend.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -27,6 +30,11 @@ public class AdminController {
         return ResponseEntity.ok("Роль успешно добавлена");
     }
 
+    @GetMapping("/user/all")
+    public List<User> getAllUsers() {
+        return userService.getAllUsers();
+    }
+
     @DeleteMapping("/user/delete")
     public void deleteUser(@RequestParam Long id) {
         userService.deleteUserById(id);
@@ -44,7 +52,7 @@ public class AdminController {
 
     @GetMapping("/hello")
     public String adminHello() {
-        System.out.println("Запрос к админу");
+//        System.out.println("Запрос к админу");
         return "Hello, Admin!";
     }
 }
