@@ -1,9 +1,6 @@
 package nikolausus.sem5.kursachisbackend.controller;
 
-import nikolausus.sem5.kursachisbackend.entity.Applications;
-import nikolausus.sem5.kursachisbackend.entity.CommentOnApplications;
-import nikolausus.sem5.kursachisbackend.entity.LogsApplications;
-import nikolausus.sem5.kursachisbackend.entity.User;
+import nikolausus.sem5.kursachisbackend.entity.*;
 import nikolausus.sem5.kursachisbackend.jwt.JwtUtil;
 import nikolausus.sem5.kursachisbackend.service.*;
 import org.springframework.http.ResponseEntity;
@@ -21,15 +18,21 @@ public class AdminController {
     private final StatusApplicationsService statusApplicationsService;
     private final JwtUtil jwtUtil;
     private final CommentOnApplicationsService commentOnApplicationsService;
+    private final OrdersService ordersService;
+    private final LogsOrdersService logsOrdersService;
+    private final StatusOrdersService statusOrdersService;
 
     public AdminController(UserService userService, ApplicationsService applicationsService, LogsApplicationsService logsApplicationsService,
-                           StatusApplicationsService statusApplicationsService, JwtUtil jwtUtil, CommentOnApplicationsService commentOnApplicationsService) {
+                           StatusApplicationsService statusApplicationsService, JwtUtil jwtUtil, CommentOnApplicationsService commentOnApplicationsService, OrdersService ordersService, LogsOrdersService logsOrdersService, StatusOrdersService statusOrdersService) {
         this.userService = userService;
         this.applicationsService = applicationsService;
         this.logsApplicationsService = logsApplicationsService;
         this.statusApplicationsService = statusApplicationsService;
         this.jwtUtil = jwtUtil;
         this.commentOnApplicationsService = commentOnApplicationsService;
+        this.ordersService = ordersService;
+        this.logsOrdersService = logsOrdersService;
+        this.statusOrdersService = statusOrdersService;
     }
 
     @GetMapping("/user/assignRole")
@@ -120,6 +123,16 @@ public class AdminController {
     @PostMapping("/user/deleteRole")
     public String deleteRole(@RequestParam Long user_id, @RequestParam Long role_id) {
         try {
+            if (role_id == 4) {
+                User user = userService.getUserById(user_id).orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+                for (Orders ord : ordersService.getAllOrders()) {
+                    if (logsOrdersService.checkLastLogStatus(user, ord, statusOrdersService.getStatusOrdersById(4L).orElseThrow(), 1)) {
+                        ord.setStatusOrders(statusOrdersService.getStatusOrdersById(3L).orElseThrow());
+                        ordersService.saveOrder(ord);
+                        logsOrdersService.createLog(user_id, ord.getId());
+                    }
+                }
+            }
             userService.deleteRoleFromUser(user_id, role_id);
         } catch (Exception e) {
             return e.getMessage();
