@@ -33,15 +33,30 @@ public class UserService {
     }
 
     public void assignRoleToUser(Long userId, Long roleId) {
-        // 1. Найти пользователя и роль в базе
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("Пользователь не найден"));
 
         Role role = roleRepository.findById(roleId).orElseThrow(() -> new RuntimeException("Роль не найдена"));
 
-        // 2. Добавить роль в коллекцию ролей пользователя
         user.getRoles().add(role);
 
-        // 3. Сохранить пользователя (с ролями)
+        userRepository.save(user);
+    }
+
+    public void deleteRoleFromUser(Long userId, Long roleId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+
+        if (roleId == 1) {
+            throw new RuntimeException("Нельзя забрать базовую роль");
+        }
+
+        Role role = roleRepository.findById(roleId).orElseThrow(() -> new RuntimeException("Роль не найдена"));
+
+        if (!user.getRoles().contains(role)) {
+            throw new RuntimeException("У пользователя нет этой роли");
+        }
+
+        user.getRoles().remove(role);
+
         userRepository.save(user);
     }
 

@@ -62,6 +62,11 @@ public class AdminController {
         return logsApplicationsService.getAllLogsByApplicationsId(application_id);
     }
 
+    @GetMapping("/comment/getById")
+    public CommentOnApplications getCommentByApplicationId(@RequestParam Long application_id) {
+        return commentOnApplicationsService.getCommentByApplicationId(application_id).orElseThrow();
+    }
+
     @GetMapping("/application/getById")
     public Applications getApplicationById(@RequestParam Long application_id) {
         return applicationsService.getApplicationsById(application_id).orElseThrow(() -> new RuntimeException("Нету"));
@@ -69,34 +74,69 @@ public class AdminController {
 
     @PostMapping("/application/reject")
     public String rejectApplication(@RequestParam Long application_id, @RequestParam String why_not, @RequestHeader("Authorization") String jwt) {
-        jwt = jwt.substring(7);
-        User user = userService.getUserByLogin(jwtUtil.extractUsername(jwt)).orElseThrow(() -> new RuntimeException("Пользователь не найден"));
-        Long user_id = user.getId();
-        Applications applications = applicationsService.getApplicationsById(application_id).orElseThrow(() -> new RuntimeException("Нету"));
-        applications.setStatusApplications(statusApplicationsService.getStatusApplicationsById(3L).orElseThrow());
-        applicationsService.saveApplications(applications);
-        logsApplicationsService.createLog(user_id, application_id);
+        try {
+            jwt = jwt.substring(7);
+            User user = userService.getUserByLogin(jwtUtil.extractUsername(jwt)).orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+            Long user_id = user.getId();
+            Applications applications = applicationsService.getApplicationsById(application_id).orElseThrow(() -> new RuntimeException("Нету"));
+            if (!applications.getStatusApplications().getId().equals(1L) && !applications.getStatusApplications().getId().equals(3L)) {
+                throw new RuntimeException("Харам менять эту заявку");
+            }
+            applications.setStatusApplications(statusApplicationsService.getStatusApplicationsById(3L).orElseThrow());
+            applicationsService.saveApplications(applications);
+            logsApplicationsService.createLog(user_id, application_id);
 
-        Optional<CommentOnApplications> comment = commentOnApplicationsService.getCommentByApplicationId(application_id);
-        if (comment.isPresent()) {
-            commentOnApplicationsService.editCommentOnApplication(why_not, comment.get().getId());
-        } else {
-            commentOnApplicationsService.createCommentOnApplication(application_id, user, why_not);
+            Optional<CommentOnApplications> comment = commentOnApplicationsService.getCommentByApplicationId(application_id);
+            if (comment.isPresent()) {
+                commentOnApplicationsService.editCommentOnApplication(why_not, comment.get().getId());
+            } else {
+                commentOnApplicationsService.createCommentOnApplication(application_id, user, why_not);
+            }
+        } catch (Exception e) {
+            return e.getMessage();
         }
         return "Заявка отклонена";
     }
 
     @PostMapping("/application/approve")
     public String approveApplication(@RequestParam Long application_id, @RequestHeader("Authorization") String jwt) {
-        jwt = jwt.substring(7);
-        Long user_id = userService.getUserByLogin(jwtUtil.extractUsername(jwt)).orElseThrow(() -> new RuntimeException("Пользователь не найден")).getId();
-        Applications applications = applicationsService.getApplicationsById(application_id).orElseThrow(() -> new RuntimeException("Нету"));
-        applications.setStatusApplications(statusApplicationsService.getStatusApplicationsById(2L).orElseThrow());
-        applicationsService.saveApplications(applications);
-        logsApplicationsService.createLog(user_id, application_id);
-        userService.assignRoleToUser(applications.getUser().getId(), applications.getRoles().getId());
+        try {
+            jwt = jwt.substring(7);
+            Long user_id = userService.getUserByLogin(jwtUtil.extractUsername(jwt)).orElseThrow(() -> new RuntimeException("Пользователь не найден")).getId();
+            Applications applications = applicationsService.getApplicationsById(application_id).orElseThrow(() -> new RuntimeException("Нету"));
+            if (!applications.getStatusApplications().getId().equals(1L) && !applications.getStatusApplications().getId().equals(3L)) {
+                throw new RuntimeException("Куда ты лезешь");
+            }
+            applications.setStatusApplications(statusApplicationsService.getStatusApplicationsById(2L).orElseThrow());
+            applicationsService.saveApplications(applications);
+            logsApplicationsService.createLog(user_id, application_id);
+            userService.assignRoleToUser(applications.getUser().getId(), applications.getRoles().getId());
+        } catch (Exception e) {
+            return e.getMessage();
+        }
         return "Заявка одобрена";
     }
+
+    @PostMapping("/user/deleteRole")
+    public String deleteRole(@RequestParam Long user_id, @RequestParam Long role_id) {
+        try {
+            userService.deleteRoleFromUser(user_id, role_id);
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+        return "Роль отобрана";
+    }
+
+    @PostMapping("/user/assignRole")
+    public String assignRole(@RequestParam Long user_id, @RequestParam Long role_id) {
+        try {
+            userService.assignRoleToUser(user_id, role_id);
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+        return "Роль отобрана";
+    }
+
 
     @GetMapping("/hello")
     public String adminHello() {

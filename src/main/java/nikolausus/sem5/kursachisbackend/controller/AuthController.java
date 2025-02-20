@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Collections;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -46,8 +46,23 @@ public class AuthController {
         if (userRepository.existsByLogin(user.getLogin())) {
             throw new RuntimeException("Логин занят");
         }
+        boolean dontHaveAnyAdmin = true;
+        Role admin_role = roleRepository.findByName("ROLE_ADMIN").orElseThrow(() -> new RuntimeException("Не смог найти роль admin"));
+        for (User us : userRepository.findAll()) {
+            for (Role ro : us.getRoles()) {
+                if (ro.equals(admin_role)) {
+                    dontHaveAnyAdmin = false;
+                    break;
+                }
+            }
+        }
+        Set<Role> roles = new HashSet<>();
+        if (dontHaveAnyAdmin) {
+            roles.add(admin_role);
+        }
         Role userRole = roleRepository.findByName("ROLE_SIMPLE").orElseThrow(() -> new RuntimeException("Не смог найти роль simple"));
-        user.setRoles(Collections.singleton(userRole));
+        roles.add(userRole);
+        user.setRoles(roles);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
         return "Успешная регистрация!";
