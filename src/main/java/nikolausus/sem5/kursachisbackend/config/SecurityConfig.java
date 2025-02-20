@@ -37,8 +37,10 @@ public class SecurityConfig {
                 .cors().and()
                 .csrf().disable()
                 .authorizeHttpRequests()
-                .requestMatchers("/api/auth/register", "/api/auth/authenticate").permitAll() // Разрешаем доступ к регистрации и аутентификации
-                .requestMatchers("/api/user/**").hasRole("SIMPLE")
+                .requestMatchers("/api/auth/register", "/api/auth/authenticate").permitAll()
+                .requestMatchers("/api/user/**").hasAnyRole("SIMPLE", "SPECIAL", "MODER", "ADMIN")
+                .requestMatchers("/api/special/**").hasAnyRole("SPECIAL", "MODER", "ADMIN")
+                .requestMatchers("/api/moder/**").hasAnyRole("MODER", "ADMIN")
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
                 .and()

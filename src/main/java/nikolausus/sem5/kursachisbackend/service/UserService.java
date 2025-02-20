@@ -28,27 +28,8 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public User registerUser(String login, String rawPassword) {
-        if (userRepository.findByLogin(login).isPresent()) {
-            throw new RuntimeException("Логин уже занят");
-        }
-
-        Role simpleRole = roleRepository.findByName("simple")
-                .orElseGet(() -> {
-                    Role newRole = new Role();
-                    newRole.setName("simple");
-                    return roleRepository.save(newRole);
-                });
-
-        User user = new User();
-        user.setLogin(login);
-        user.setPassword(passwordEncoder.encode(rawPassword)); // 👈 Хешируем пароль!
-        // Добавляем роль "simple" пользователю
-        Set<Role> roles = new HashSet<>();
-        roles.add(simpleRole);
-        user.setRoles(roles);
-
-        return userRepository.save(user);
+    public Optional<User> getUserByLogin(String login) {
+        return userRepository.findByLogin(login);
     }
 
     public void assignRoleToUser(Long userId, Long roleId) {

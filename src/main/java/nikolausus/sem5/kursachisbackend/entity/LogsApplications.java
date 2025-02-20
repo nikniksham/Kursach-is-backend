@@ -24,7 +24,7 @@ public class LogsApplications {
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "application_id", referencedColumnName = "id")
+    @JoinColumn(name = "applications_id", referencedColumnName = "id")
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private Applications applications;
 
