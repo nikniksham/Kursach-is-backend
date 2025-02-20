@@ -114,7 +114,7 @@ public class AdminController {
         } catch (Exception e) {
             return e.getMessage();
         }
-        return "Заявка одобрена";
+        return "Заявка выдана";
     }
 
     @PostMapping("/user/deleteRole")
@@ -134,7 +134,7 @@ public class AdminController {
         } catch (Exception e) {
             return e.getMessage();
         }
-        return "Роль отобрана";
+        return "Роль выдана";
     }
 
 

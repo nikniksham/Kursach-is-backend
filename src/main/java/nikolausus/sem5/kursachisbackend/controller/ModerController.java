@@ -90,4 +90,40 @@ public class ModerController {
         }
         return "Заказ одобрен";
     }
+
+    @PostMapping("/orders/makeOk")
+    public String makeOk(@RequestParam Long order_id, @RequestHeader("Authorization") String jwt) {
+        try {
+            jwt = jwt.substring(7);
+            Long user_id = userService.getUserByLogin(jwtUtil.extractUsername(jwt)).orElseThrow(() -> new RuntimeException("Пользователь не найден")).getId();
+            Orders orders = ordersService.getOrderById(order_id).orElseThrow();
+            if (!orders.getStatusOrders().getId().equals(5L)) {
+                throw new RuntimeException("Этот заказ нельзя подтвердить");
+            }
+            orders.setStatusOrders(statusOrdersService.getStatusOrdersById(6L).orElseThrow());
+            ordersService.saveOrder(orders);
+            logsOrdersService.createLog(user_id, order_id);
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+        return "Выполнение заказа подтверждено";
+    }
+
+    @PostMapping("/orders/makeBad")
+    public String makeBad(@RequestParam Long order_id, @RequestHeader("Authorization") String jwt) {
+        try {
+            jwt = jwt.substring(7);
+            Long user_id = userService.getUserByLogin(jwtUtil.extractUsername(jwt)).orElseThrow(() -> new RuntimeException("Пользователь не найден")).getId();
+            Orders orders = ordersService.getOrderById(order_id).orElseThrow();
+            if (!orders.getStatusOrders().getId().equals(5L)) {
+                throw new RuntimeException("Этот заказ нельзя НЕ подтвердить");
+            }
+            orders.setStatusOrders(statusOrdersService.getStatusOrdersById(3L).orElseThrow());
+            ordersService.saveOrder(orders);
+            logsOrdersService.createLog(user_id, order_id);
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+        return "Выполнение заказа отменено";
+    }
 }
