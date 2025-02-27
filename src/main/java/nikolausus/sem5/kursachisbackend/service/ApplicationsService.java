@@ -1,5 +1,6 @@
 package nikolausus.sem5.kursachisbackend.service;
 
+import nikolausus.sem5.kursachisbackend.DTO.ApplicationsDTO;
 import nikolausus.sem5.kursachisbackend.entity.Applications;
 import nikolausus.sem5.kursachisbackend.entity.Role;
 import nikolausus.sem5.kursachisbackend.entity.StatusApplications;
@@ -15,7 +16,6 @@ public class ApplicationsService {
     private final ApplicationsRepository applicationsRepository;
     private final LogsApplicationsService logsApplicationsRepository;
     private final StatusApplicationsService statusApplicationsService;
-
 
     public ApplicationsService(ApplicationsRepository applicationsRepository, LogsApplicationsService logsApplicationsService, StatusApplicationsService statusApplicationsService) {
         this.applicationsRepository = applicationsRepository;
