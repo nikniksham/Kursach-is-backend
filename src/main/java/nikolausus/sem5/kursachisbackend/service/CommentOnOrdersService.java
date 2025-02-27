@@ -1,5 +1,11 @@
 package nikolausus.sem5.kursachisbackend.service;
 
+import nikolausus.sem5.kursachisbackend.DTO.CommentOnOrdersDTO;
+import nikolausus.sem5.kursachisbackend.DTO.OrdersDTO;
+import nikolausus.sem5.kursachisbackend.DTO.UserDTO;
+import nikolausus.sem5.kursachisbackend.Mapper.CommentOnOrdersMapper;
+import nikolausus.sem5.kursachisbackend.Mapper.OrdersMapper;
+import nikolausus.sem5.kursachisbackend.Mapper.UserMapper;
 import nikolausus.sem5.kursachisbackend.entity.CommentOnOrders;
 import nikolausus.sem5.kursachisbackend.entity.User;
 import nikolausus.sem5.kursachisbackend.repository.CommentOnOrdersRepository;
@@ -18,14 +24,16 @@ public class CommentOnOrdersService {
         this.ordersRepository = ordersRepository;
     }
 
-    public Optional<CommentOnOrders> getCommentByOrderId(Long order_id) {
-        return commentOnOrdersRepository.getCommentOnOrdersByOrders(ordersRepository.getOrdersById(order_id).orElseThrow());
+    public CommentOnOrdersDTO getCommentByOrderId(OrdersDTO ordersDTO) {
+        return CommentOnOrdersMapper.toDTO(
+                commentOnOrdersRepository.getCommentOnOrdersByOrders(OrdersMapper.toEntity(ordersDTO))
+                        .orElseThrow(()->new RuntimeException("Комментарий на этот заказ не найден")));
     }
 
-    public CommentOnOrders createCommentOnOrder(Long order_id, User user, String text) {
+    public CommentOnOrders createCommentOnOrder(Long order_id, UserDTO userDTO, String text) {
         CommentOnOrders commentOnOrders = new CommentOnOrders();
         commentOnOrders.setOrders(ordersRepository.getOrdersById(order_id).orElseThrow());
-        commentOnOrders.setUser(user);
+        commentOnOrders.setUser(UserMapper.toEntity(userDTO));
         commentOnOrders.setText(text);
         return commentOnOrdersRepository.save(commentOnOrders);
     }

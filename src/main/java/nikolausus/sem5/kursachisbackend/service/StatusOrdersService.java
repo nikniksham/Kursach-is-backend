@@ -1,5 +1,7 @@
 package nikolausus.sem5.kursachisbackend.service;
 
+import nikolausus.sem5.kursachisbackend.DTO.StatusOrdersDTO;
+import nikolausus.sem5.kursachisbackend.Mapper.StatusOrdersMapper;
 import nikolausus.sem5.kursachisbackend.entity.StatusOrders;
 import nikolausus.sem5.kursachisbackend.repository.StatusOrdersRepository;
 import org.springframework.stereotype.Service;
@@ -19,7 +21,7 @@ public class StatusOrdersService {
         return statusOrdersRepository.findAll();
     }
 
-    public Optional<StatusOrders> getStatusOrdersById(Long id) {
-        return statusOrdersRepository.findById(id);
+    public StatusOrdersDTO getStatusOrdersById(Long id) {
+        return StatusOrdersMapper.toDTO(statusOrdersRepository.findById(id).orElseThrow(()->new RuntimeException("Статус заказа с таким id не найден")));
     }
 }

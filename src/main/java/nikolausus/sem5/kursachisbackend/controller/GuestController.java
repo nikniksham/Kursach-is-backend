@@ -1,8 +1,7 @@
 package nikolausus.sem5.kursachisbackend.controller;
 
-import nikolausus.sem5.kursachisbackend.entity.Orders;
+import nikolausus.sem5.kursachisbackend.DTO.OrdersDTO;
 import nikolausus.sem5.kursachisbackend.service.OrdersService;
-import org.aspectj.weaver.ast.Or;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,10 +20,10 @@ public class GuestController {
     }
 
     @GetMapping("/orders/all")
-    public List<Orders> getAllOrders() {
-        List<Orders> orders = new ArrayList<>();
-        for (Orders ord : ordersService.getAllOrders()) {
-            if (ord.getStatusOrders().getId() == 3 || ord.getStatusOrders().getId() == 4 || ord.getStatusOrders().getId() == 6) {
+    public List<OrdersDTO> getAllOrders() {
+        List<OrdersDTO> orders = new ArrayList<>();
+        for (OrdersDTO ord : ordersService.getAllOrders()) {
+            if (ord.getStatusOrdersDTO().getId() == 3 || ord.getStatusOrdersDTO().getId()== 4 || ord.getStatusOrdersDTO().getId() == 6) {
                 orders.add(ord);
             }
         }
@@ -32,11 +31,11 @@ public class GuestController {
     }
 
     @GetMapping("/orders/getById")
-    public Orders getOrderById(@RequestParam Long order_id) {
-        Orders orders = ordersService.getOrderById(order_id).orElseThrow(() -> new RuntimeException("Не найден заказ"));
-        if (orders.getStatusOrders().getId() != 3 && orders.getStatusOrders().getId() != 4 && orders.getStatusOrders().getId() != 6) {
+    public OrdersDTO getOrderById(@RequestParam Long order_id) {
+        OrdersDTO ordersDTO = ordersService.getOrderById(order_id);
+        if (ordersDTO.getStatusOrdersDTO().getId() != 3 && ordersDTO.getStatusOrdersDTO().getId() != 4 && ordersDTO.getStatusOrdersDTO().getId() != 6) {
             throw new RuntimeException("С таким статусом нельзя");
         }
-        return orders;
+        return ordersDTO;
     }
 }

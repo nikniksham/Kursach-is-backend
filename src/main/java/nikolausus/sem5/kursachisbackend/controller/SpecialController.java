@@ -1,7 +1,7 @@
 package nikolausus.sem5.kursachisbackend.controller;
 
-import nikolausus.sem5.kursachisbackend.entity.Orders;
-import nikolausus.sem5.kursachisbackend.entity.User;
+import nikolausus.sem5.kursachisbackend.DTO.OrdersDTO;
+import nikolausus.sem5.kursachisbackend.DTO.UserDTO;
 import nikolausus.sem5.kursachisbackend.jwt.JwtUtil;
 import nikolausus.sem5.kursachisbackend.service.LogsOrdersService;
 import nikolausus.sem5.kursachisbackend.service.OrdersService;
@@ -30,10 +30,10 @@ public class SpecialController {
     }
 
     @GetMapping("/orders/all")
-    public List<Orders> getAllOrders() {
-        List<Orders> orders = new ArrayList<>();
-        for (Orders ord : ordersService.getAllOrders()) {
-            if (ord.getStatusOrders().getId() == 3) {
+    public List<OrdersDTO> getAllOrders() {
+        List<OrdersDTO> orders = new ArrayList<>();
+        for (OrdersDTO ord : ordersService.getAllOrders()) {
+            if (ord.getStatusOrdersDTO().getId() == 3) {
                 orders.add(ord);
             }
         }
@@ -41,18 +41,18 @@ public class SpecialController {
     }
 
     @GetMapping("/orders/getById")
-    public Orders getOrderById(@RequestParam Long order_id) {
-        return ordersService.getOrderById(order_id).orElseThrow(() -> new RuntimeException("Не найден заказ"));
+    public OrdersDTO getOrderById(@RequestParam Long order_id) {
+        return ordersService.getOrderById(order_id);
     }
 
     @GetMapping("/orders/finish")
     public String finishOrderById(@RequestParam Long order_id, @RequestHeader("Authorization") String jwt) {
         try {
             jwt = jwt.substring(7);
-            User user = userService.getUserByLogin(jwtUtil.extractUsername(jwt)).orElseThrow();
-            Orders ord = ordersService.getOrderById(order_id).orElseThrow(() -> new RuntimeException("Не найден заказ"));
-            if (logsOrdersService.checkLastLogStatus(user, ord, statusOrdersService.getStatusOrdersById(4L).orElseThrow(), 1)) {
-                ord.setStatusOrders(statusOrdersService.getStatusOrdersById(5L).orElseThrow());
+            UserDTO user = userService.getUserByLogin(jwtUtil.extractUsername(jwt));
+            OrdersDTO ord = ordersService.getOrderById(order_id);
+            if (logsOrdersService.checkLastLogStatus(user, ord, statusOrdersService.getStatusOrdersById(4L), 1)) {
+                ord.setStatusOrdersDTO(statusOrdersService.getStatusOrdersById(5L));
                 ordersService.saveOrder(ord);
                 logsOrdersService.createLog(user.getId(), order_id);
                 return "Выполнение ждёт подтверждения";
@@ -67,13 +67,13 @@ public class SpecialController {
     public String startWorkOrderById(@RequestParam Long order_id, @RequestHeader("Authorization") String jwt) {
         try {
             jwt = jwt.substring(7);
-            Long user_id = userService.getUserByLogin(jwtUtil.extractUsername(jwt)).orElseThrow(() -> new RuntimeException("Пользователь не найден")).getId();
-            Orders orders = ordersService.getOrderById(order_id).orElseThrow(() -> new RuntimeException("Не найден заказ"));
-            if (orders.getStatusOrders().getId() != 3) {
+            Long user_id = userService.getUserByLogin(jwtUtil.extractUsername(jwt)).getId();
+            OrdersDTO ordersDTO = ordersService.getOrderById(order_id);
+            if (ordersDTO.getStatusOrdersDTO().getId() != 3) {
                 throw new RuntimeException("Заказ с таким статутсом нельзя взять в работу");
             }
-            orders.setStatusOrders(statusOrdersService.getStatusOrdersById(4L).orElseThrow());
-            ordersService.saveOrder(orders);
+            ordersDTO.setStatusOrdersDTO(statusOrdersService.getStatusOrdersById(4L));
+            ordersService.saveOrder(ordersDTO);
             logsOrdersService.createLog(user_id, order_id);
             return "Заказ выполнен успешно взят в работу";
         } catch (Exception e) {
@@ -82,13 +82,13 @@ public class SpecialController {
     }
 
     @GetMapping("/orders/what_i_do")
-    public List<Orders> getWhatIDo(@RequestHeader("Authorization") String jwt) {
+    public List<OrdersDTO> getWhatIDo(@RequestHeader("Authorization") String jwt) {
         jwt = jwt.substring(7);
-        User user = userService.getUserByLogin(jwtUtil.extractUsername(jwt)).orElseThrow();
-        List<Orders> orders = new ArrayList<>();
-        for (Orders ord : ordersService.getAllOrders()) {
-            if (ord.getStatusOrders().getId() == 4) {
-                if (logsOrdersService.checkLastLogStatus(user, ord, statusOrdersService.getStatusOrdersById(4L).orElseThrow(), 1)) {
+        UserDTO user = userService.getUserByLogin(jwtUtil.extractUsername(jwt));
+        List<OrdersDTO> orders = new ArrayList<>();
+        for (OrdersDTO ord : ordersService.getAllOrders()) {
+            if (ord.getStatusOrdersDTO().getId() == 4) {
+                if (logsOrdersService.checkLastLogStatus(user, ord, statusOrdersService.getStatusOrdersById(4L), 1)) {
                     orders.add(ord);
                 }
             }
@@ -97,13 +97,13 @@ public class SpecialController {
     }
 
     @GetMapping("/orders/portfolio")
-    public List<Orders> portfolio(@RequestHeader("Authorization") String jwt) {
+    public List<OrdersDTO> portfolio(@RequestHeader("Authorization") String jwt) {
         jwt = jwt.substring(7);
-        User user = userService.getUserByLogin(jwtUtil.extractUsername(jwt)).orElseThrow();
-        List<Orders> orders = new ArrayList<>();
-        for (Orders ord : ordersService.getAllOrders()) {
-            if (ord.getStatusOrders().getId() == 6) {
-                if (logsOrdersService.checkLastLogStatus(user, ord, statusOrdersService.getStatusOrdersById(5L).orElseThrow(), 2)) {
+        UserDTO userDTO = userService.getUserByLogin(jwtUtil.extractUsername(jwt));
+        List<OrdersDTO> orders = new ArrayList<>();
+        for (OrdersDTO ord : ordersService.getAllOrders()) {
+            if (ord.getStatusOrdersDTO().getId() == 6) {
+                if (logsOrdersService.checkLastLogStatus(userDTO, ord, statusOrdersService.getStatusOrdersById(5L), 2)) {
                     orders.add(ord);
                 }
             }
@@ -115,12 +115,12 @@ public class SpecialController {
     public String reject(@RequestHeader("Authorization") String jwt, @RequestParam Long order_id) {
         try {
             jwt = jwt.substring(7);
-            User user = userService.getUserByLogin(jwtUtil.extractUsername(jwt)).orElseThrow();
-            Orders ord = ordersService.getOrderById(order_id).orElseThrow(() -> new RuntimeException("Не найден заказ"));
-            if (logsOrdersService.checkLastLogStatus(user, ord, statusOrdersService.getStatusOrdersById(4L).orElseThrow(), 1)) {
-                ord.setStatusOrders(statusOrdersService.getStatusOrdersById(3L).orElseThrow());
+            UserDTO userDTO = userService.getUserByLogin(jwtUtil.extractUsername(jwt));
+            OrdersDTO ord = ordersService.getOrderById(order_id);
+            if (logsOrdersService.checkLastLogStatus(userDTO, ord, statusOrdersService.getStatusOrdersById(4L), 1)) {
+                ord.setStatusOrdersDTO(statusOrdersService.getStatusOrdersById(3L));
                 ordersService.saveOrder(ord);
-                logsOrdersService.createLog(user.getId(), order_id);
+                logsOrdersService.createLog(userDTO.getId(), order_id);
                 return "Вы отказались от заказа";
             }
             return "Вы не можете отказаться от этого заказа";

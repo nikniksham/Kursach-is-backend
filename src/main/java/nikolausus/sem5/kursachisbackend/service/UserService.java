@@ -1,5 +1,7 @@
 package nikolausus.sem5.kursachisbackend.service;
 
+import nikolausus.sem5.kursachisbackend.DTO.UserDTO;
+import nikolausus.sem5.kursachisbackend.Mapper.UserMapper;
 import nikolausus.sem5.kursachisbackend.entity.Role;
 import nikolausus.sem5.kursachisbackend.entity.User;
 import nikolausus.sem5.kursachisbackend.repository.RoleRepository;
@@ -14,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -28,8 +31,8 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public Optional<User> getUserByLogin(String login) {
-        return userRepository.findByLogin(login);
+    public UserDTO getUserByLogin(String login) {
+        return UserMapper.toDTO(userRepository.findByLogin(login).orElseThrow(()->new RuntimeException("Пользователь с заданным login не найден")));
     }
 
     public void assignRoleToUser(Long userId, Long roleId) {
@@ -60,12 +63,12 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<UserDTO> getAllUsers() {
+        return userRepository.findAll().stream().map(UserMapper::toDTO).collect(Collectors.toList());
     }
 
-    public Optional<User> getUserById(Long id) {
-        return userRepository.findById(id);
+    public UserDTO getUserById(Long id) {
+        return UserMapper.toDTO(userRepository.findById(id).orElseThrow(()->new RuntimeException("Пользователь с указанынм id не найден")));
     }
 
     public void deleteUserById(Long id) {

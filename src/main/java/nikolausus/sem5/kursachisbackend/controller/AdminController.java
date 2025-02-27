@@ -1,6 +1,6 @@
 package nikolausus.sem5.kursachisbackend.controller;
 
-import nikolausus.sem5.kursachisbackend.entity.*;
+import nikolausus.sem5.kursachisbackend.DTO.*;
 import nikolausus.sem5.kursachisbackend.jwt.JwtUtil;
 import nikolausus.sem5.kursachisbackend.service.*;
 import org.springframework.http.ResponseEntity;
@@ -46,7 +46,7 @@ public class AdminController {
     }
 
     @GetMapping("/user/all")
-    public List<User> getAllUsers() {
+    public List<UserDTO> getAllUsers() {
         return userService.getAllUsers();
     }
 
@@ -56,44 +56,45 @@ public class AdminController {
     }
 
     @GetMapping("/application/all")
-    public List<Applications> getAllApplications() {
+    public List<ApplicationsDTO> getAllApplications() {
         return applicationsService.getAllApplications();
     }
 
     @GetMapping("/application/getAllLogs")
-    public List<LogsApplications> getAllApplications(@RequestParam Long application_id) {
+    public List<LogsApplicationsDTO> getAllApplications(@RequestParam Long application_id) {
         return logsApplicationsService.getAllLogsByApplicationsId(application_id);
     }
 
     @GetMapping("/comment/getById")
-    public CommentOnApplications getCommentByApplicationId(@RequestParam Long application_id) {
-        return commentOnApplicationsService.getCommentByApplicationId(application_id).orElseThrow();
+    public CommentOnApplicationsDTO getCommentByApplicationId(@RequestParam Long application_id) {
+        return commentOnApplicationsService.getCommentByApplication(applicationsService.getApplicationsById(application_id));
     }
 
     @GetMapping("/application/getById")
-    public Applications getApplicationById(@RequestParam Long application_id) {
-        return applicationsService.getApplicationsById(application_id).orElseThrow(() -> new RuntimeException("Нету"));
+    public ApplicationsDTO getApplicationById(@RequestParam Long application_id) {
+        return applicationsService.getApplicationsById(application_id);
     }
 
     @PostMapping("/application/reject")
     public String rejectApplication(@RequestParam Long application_id, @RequestParam String why_not, @RequestHeader("Authorization") String jwt) {
         try {
             jwt = jwt.substring(7);
-            User user = userService.getUserByLogin(jwtUtil.extractUsername(jwt)).orElseThrow(() -> new RuntimeException("Пользователь не найден"));
-            Long user_id = user.getId();
-            Applications applications = applicationsService.getApplicationsById(application_id).orElseThrow(() -> new RuntimeException("Нету"));
-            if (!applications.getStatusApplications().getId().equals(1L) && !applications.getStatusApplications().getId().equals(3L)) {
+            UserDTO userDTO = userService.getUserByLogin(jwtUtil.extractUsername(jwt));
+            Long user_id = userDTO.getId();
+            ApplicationsDTO applicationsDTO = applicationsService.getApplicationsById(application_id);
+            if (!applicationsDTO.getStatusApplicationsDTO().getId().equals(1L) && !applicationsDTO.getStatusApplicationsDTO().getId().equals(3L)) {
                 throw new RuntimeException("Харам менять эту заявку");
             }
-            applications.setStatusApplications(statusApplicationsService.getStatusApplicationsById(3L).orElseThrow());
-            applicationsService.saveApplications(applications);
+            applicationsDTO.setStatusApplicationsDTO(statusApplicationsService.getStatusApplicationsById(3L));
+            applicationsService.saveApplications(applicationsDTO);
             logsApplicationsService.createLog(user_id, application_id);
 
-            Optional<CommentOnApplications> comment = commentOnApplicationsService.getCommentByApplicationId(application_id);
-            if (comment.isPresent()) {
-                commentOnApplicationsService.editCommentOnApplication(why_not, comment.get().getId());
-            } else {
-                commentOnApplicationsService.createCommentOnApplication(application_id, user, why_not);
+            try {
+                CommentOnApplicationsDTO commentOnApplicationsDTO = commentOnApplicationsService.getCommentByApplication(applicationsService.getApplicationsById(application_id));
+                commentOnApplicationsService.editCommentOnApplication(why_not, commentOnApplicationsDTO.getId());
+            } catch (Exception e) {
+                System.out.println("Должен создать");
+                commentOnApplicationsService.createCommentOnApplication(application_id, userDTO, why_not);
             }
         } catch (Exception e) {
             return e.getMessage();
@@ -105,15 +106,15 @@ public class AdminController {
     public String approveApplication(@RequestParam Long application_id, @RequestHeader("Authorization") String jwt) {
         try {
             jwt = jwt.substring(7);
-            Long user_id = userService.getUserByLogin(jwtUtil.extractUsername(jwt)).orElseThrow(() -> new RuntimeException("Пользователь не найден")).getId();
-            Applications applications = applicationsService.getApplicationsById(application_id).orElseThrow(() -> new RuntimeException("Нету"));
-            if (!applications.getStatusApplications().getId().equals(1L) && !applications.getStatusApplications().getId().equals(3L)) {
+            Long user_id = userService.getUserByLogin(jwtUtil.extractUsername(jwt)).getId();
+            ApplicationsDTO applicationsDTO = applicationsService.getApplicationsById(application_id);
+            if (!applicationsDTO.getStatusApplicationsDTO().getId().equals(1L) && !applicationsDTO.getStatusApplicationsDTO().getId().equals(3L)) {
                 throw new RuntimeException("Куда ты лезешь");
             }
-            applications.setStatusApplications(statusApplicationsService.getStatusApplicationsById(2L).orElseThrow());
-            applicationsService.saveApplications(applications);
+            applicationsDTO.setStatusApplicationsDTO(statusApplicationsService.getStatusApplicationsById(2L));
+            applicationsService.saveApplications(applicationsDTO);
             logsApplicationsService.createLog(user_id, application_id);
-            userService.assignRoleToUser(applications.getUser().getId(), applications.getRoles().getId());
+            userService.assignRoleToUser(applicationsDTO.getUserDTO().getId(), applicationsDTO.getRoleDTO().getId());
         } catch (Exception e) {
             return e.getMessage();
         }
@@ -124,10 +125,10 @@ public class AdminController {
     public String deleteRole(@RequestParam Long user_id, @RequestParam Long role_id) {
         try {
             if (role_id == 4) {
-                User user = userService.getUserById(user_id).orElseThrow(() -> new RuntimeException("Пользователь не найден"));
-                for (Orders ord : ordersService.getAllOrders()) {
-                    if (logsOrdersService.checkLastLogStatus(user, ord, statusOrdersService.getStatusOrdersById(4L).orElseThrow(), 1)) {
-                        ord.setStatusOrders(statusOrdersService.getStatusOrdersById(3L).orElseThrow());
+                UserDTO userDTO = userService.getUserById(user_id);
+                for (OrdersDTO ord : ordersService.getAllOrders()) {
+                    if (logsOrdersService.checkLastLogStatus(userDTO, ord, statusOrdersService.getStatusOrdersById(4L), 1)) {
+                        ord.setStatusOrdersDTO(statusOrdersService.getStatusOrdersById(3L));
                         ordersService.saveOrder(ord);
                         logsOrdersService.createLog(user_id, ord.getId());
                     }

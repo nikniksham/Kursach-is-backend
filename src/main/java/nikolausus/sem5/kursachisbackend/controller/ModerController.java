@@ -1,6 +1,9 @@
 package nikolausus.sem5.kursachisbackend.controller;
 
-import nikolausus.sem5.kursachisbackend.entity.*;
+import nikolausus.sem5.kursachisbackend.DTO.CommentOnOrdersDTO;
+import nikolausus.sem5.kursachisbackend.DTO.LogsOrdersDTO;
+import nikolausus.sem5.kursachisbackend.DTO.OrdersDTO;
+import nikolausus.sem5.kursachisbackend.DTO.UserDTO;
 import nikolausus.sem5.kursachisbackend.jwt.JwtUtil;
 import nikolausus.sem5.kursachisbackend.service.*;
 import org.springframework.web.bind.annotation.*;
@@ -28,44 +31,44 @@ public class ModerController {
     }
 
     @GetMapping("/orders/all")
-    public List<Orders> getAllOrders() {
+    public List<OrdersDTO> getAllOrders() {
         return ordersService.getAllOrders();
     }
 
     @GetMapping("/orders/getById")
-    public Orders getOrderById(@RequestParam Long order_id) {
-        return ordersService.getOrderById(order_id).orElseThrow(() -> new RuntimeException("Не найден заказ"));
+    public OrdersDTO getOrderById(@RequestParam Long order_id) {
+        return ordersService.getOrderById(order_id);
     }
 
     @GetMapping("/orders/getAllLogs")
-    public List<LogsOrders> getAllOrderLogs(@RequestParam Long order_id) {
+    public List<LogsOrdersDTO> getAllOrderLogs(@RequestParam Long order_id) {
         return logsOrdersService.getAllLogsByOrderId(order_id);
     }
 
     @GetMapping("/comment/getById")
-    public CommentOnOrders getCommentByApplicationId(@RequestParam Long order_id) {
-        return commentOnOrdersService.getCommentByOrderId(order_id).orElseThrow();
+    public CommentOnOrdersDTO getCommentByOrderId(@RequestParam Long order_id) {
+        return commentOnOrdersService.getCommentByOrderId(ordersService.getOrderById(order_id));
     }
 
     @PostMapping("/orders/reject")
     public String rejectOrder(@RequestParam Long order_id, @RequestParam String why_not, @RequestHeader("Authorization") String jwt) {
         try {
             jwt = jwt.substring(7);
-            User user = userService.getUserByLogin(jwtUtil.extractUsername(jwt)).orElseThrow(() -> new RuntimeException("Пользователь не найден"));
-            Long user_id = user.getId();
-            Orders orders = ordersService.getOrderById(order_id).orElseThrow(() -> new RuntimeException("Нету"));
-            if (!orders.getStatusOrders().getId().equals(1L) && !orders.getStatusOrders().getId().equals(2L)) {
+            UserDTO userDTO = userService.getUserByLogin(jwtUtil.extractUsername(jwt));
+            Long user_id = userDTO.getId();
+            OrdersDTO ordersDTO = ordersService.getOrderById(order_id);
+            if (!ordersDTO.getStatusOrdersDTO().getId().equals(1L) && !ordersDTO.getStatusOrdersDTO().getId().equals(2L)) {
                 throw new RuntimeException("Харам менять этот order");
             }
-            orders.setStatusOrders(statusOrdersService.getStatusOrdersById(2L).orElseThrow(() -> new RuntimeException("Нет такого статуса")));
-            ordersService.saveOrder(orders);
+            ordersDTO.setStatusOrdersDTO(statusOrdersService.getStatusOrdersById(2L));
+            ordersService.saveOrder(ordersDTO);
             logsOrdersService.createLog(user_id, order_id);
 
-            Optional<CommentOnOrders> comment = commentOnOrdersService.getCommentByOrderId(order_id);
-            if (comment.isPresent()) {
-                commentOnOrdersService.editCommentOnOrder(why_not, comment.get().getId());
-            } else {
-                commentOnOrdersService.createCommentOnOrder(order_id, user, why_not);
+            try {
+                CommentOnOrdersDTO commentOnOrdersDTO = commentOnOrdersService.getCommentByOrderId(ordersDTO);
+                commentOnOrdersService.editCommentOnOrder(why_not, commentOnOrdersDTO.getId());
+            } catch (Exception e) {
+                commentOnOrdersService.createCommentOnOrder(order_id, userDTO, why_not);
             }
         } catch (Exception e) {
             return e.getMessage();
@@ -77,13 +80,13 @@ public class ModerController {
     public String approveOrder(@RequestParam Long order_id, @RequestHeader("Authorization") String jwt) {
         try {
             jwt = jwt.substring(7);
-            Long user_id = userService.getUserByLogin(jwtUtil.extractUsername(jwt)).orElseThrow(() -> new RuntimeException("Пользователь не найден")).getId();
-            Orders orders = ordersService.getOrderById(order_id).orElseThrow();
-            if (!orders.getStatusOrders().getId().equals(1L) && !orders.getStatusOrders().getId().equals(2L)) {
+            Long user_id = userService.getUserByLogin(jwtUtil.extractUsername(jwt)).getId();
+            OrdersDTO ordersDTO = ordersService.getOrderById(order_id);
+            if (!ordersDTO.getStatusOrdersDTO().getId().equals(1L) && !ordersDTO.getStatusOrdersDTO().getId().equals(2L)) {
                 throw new RuntimeException("Харам менять этот order");
             }
-            orders.setStatusOrders(statusOrdersService.getStatusOrdersById(3L).orElseThrow());
-            ordersService.saveOrder(orders);
+            ordersDTO.setStatusOrdersDTO(statusOrdersService.getStatusOrdersById(3L));
+            ordersService.saveOrder(ordersDTO);
             logsOrdersService.createLog(user_id, order_id);
         } catch (Exception e) {
             return e.getMessage();
@@ -95,13 +98,13 @@ public class ModerController {
     public String makeOk(@RequestParam Long order_id, @RequestHeader("Authorization") String jwt) {
         try {
             jwt = jwt.substring(7);
-            Long user_id = userService.getUserByLogin(jwtUtil.extractUsername(jwt)).orElseThrow(() -> new RuntimeException("Пользователь не найден")).getId();
-            Orders orders = ordersService.getOrderById(order_id).orElseThrow();
-            if (!orders.getStatusOrders().getId().equals(5L)) {
+            Long user_id = userService.getUserByLogin(jwtUtil.extractUsername(jwt)).getId();
+            OrdersDTO ordersDTO = ordersService.getOrderById(order_id);
+            if (!ordersDTO.getStatusOrdersDTO().getId().equals(5L)) {
                 throw new RuntimeException("Этот заказ нельзя подтвердить");
             }
-            orders.setStatusOrders(statusOrdersService.getStatusOrdersById(6L).orElseThrow());
-            ordersService.saveOrder(orders);
+            ordersDTO.setStatusOrdersDTO(statusOrdersService.getStatusOrdersById(6L));
+            ordersService.saveOrder(ordersDTO);
             logsOrdersService.createLog(user_id, order_id);
         } catch (Exception e) {
             return e.getMessage();
@@ -113,13 +116,13 @@ public class ModerController {
     public String makeBad(@RequestParam Long order_id, @RequestHeader("Authorization") String jwt) {
         try {
             jwt = jwt.substring(7);
-            Long user_id = userService.getUserByLogin(jwtUtil.extractUsername(jwt)).orElseThrow(() -> new RuntimeException("Пользователь не найден")).getId();
-            Orders orders = ordersService.getOrderById(order_id).orElseThrow();
-            if (!orders.getStatusOrders().getId().equals(5L)) {
+            Long user_id = userService.getUserByLogin(jwtUtil.extractUsername(jwt)).getId();
+            OrdersDTO ordersDTO = ordersService.getOrderById(order_id);
+            if (!ordersDTO.getStatusOrdersDTO().getId().equals(5L)) {
                 throw new RuntimeException("Этот заказ нельзя НЕ подтвердить");
             }
-            orders.setStatusOrders(statusOrdersService.getStatusOrdersById(3L).orElseThrow());
-            ordersService.saveOrder(orders);
+            ordersDTO.setStatusOrdersDTO(statusOrdersService.getStatusOrdersById(3L));
+            ordersService.saveOrder(ordersDTO);
             logsOrdersService.createLog(user_id, order_id);
         } catch (Exception e) {
             return e.getMessage();

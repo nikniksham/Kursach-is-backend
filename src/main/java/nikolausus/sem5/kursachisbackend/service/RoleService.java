@@ -1,5 +1,7 @@
 package nikolausus.sem5.kursachisbackend.service;
 
+import nikolausus.sem5.kursachisbackend.DTO.RoleDTO;
+import nikolausus.sem5.kursachisbackend.Mapper.RoleMapper;
 import nikolausus.sem5.kursachisbackend.entity.Role;
 import nikolausus.sem5.kursachisbackend.repository.RoleRepository;
 import org.springframework.stereotype.Service;
@@ -13,7 +15,7 @@ public class RoleService {
         this.roleRepository = roleRepository;
     }
 
-    public Role getRoleById(Long id) {
-        return roleRepository.findById(id).orElseThrow(() -> new RuntimeException("Роль с заданным id не найдена"));
+    public RoleDTO getRoleById(Long id) {
+        return RoleMapper.toDTO(roleRepository.findById(id).orElseThrow(() -> new RuntimeException("Роль с заданным id не найдена")));
     }
 }
