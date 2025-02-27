@@ -18,4 +18,8 @@ public class RoleService {
     public RoleDTO getRoleById(Long id) {
         return RoleMapper.toDTO(roleRepository.findById(id).orElseThrow(() -> new RuntimeException("Роль с заданным id не найдена")));
     }
+
+    public RoleDTO getRoleByName(String name) {
+        return RoleMapper.toDTO(roleRepository.findByName(name).orElseThrow(() -> new RuntimeException("Не смог найти роль " + name)));
+    }
 }

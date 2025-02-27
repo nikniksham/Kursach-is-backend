@@ -1,6 +1,8 @@
 package nikolausus.sem5.kursachisbackend.service;
 
+import nikolausus.sem5.kursachisbackend.DTO.RoleDTO;
 import nikolausus.sem5.kursachisbackend.DTO.UserDTO;
+import nikolausus.sem5.kursachisbackend.Mapper.RoleMapper;
 import nikolausus.sem5.kursachisbackend.Mapper.UserMapper;
 import nikolausus.sem5.kursachisbackend.entity.Role;
 import nikolausus.sem5.kursachisbackend.entity.User;
@@ -77,5 +79,17 @@ public class UserService {
 
     public void deleteUser(User user) {
         userRepository.delete(user);
+    }
+
+    public boolean existsByLogin(String login) {
+        return userRepository.existsByLogin(login);
+    }
+
+    public UserDTO createNewUser(String login, String password, Set<RoleDTO> roles) {
+        User user = new User();
+        user.setLogin(login);
+        user.setPassword(password);
+        user.setRoles(roles.stream().map(RoleMapper::toEntity).collect(Collectors.toSet()));
+        return UserMapper.toDTO(userRepository.save(user));
     }
 }
