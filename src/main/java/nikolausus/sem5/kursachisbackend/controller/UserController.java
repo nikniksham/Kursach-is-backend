@@ -2,6 +2,8 @@ package nikolausus.sem5.kursachisbackend.controller;
 
 import lombok.Getter;
 import lombok.Setter;
+import nikolausus.sem5.kursachisbackend.DTO.UserDTO;
+import nikolausus.sem5.kursachisbackend.Mapper.UserMapper;
 import nikolausus.sem5.kursachisbackend.entity.*;
 import nikolausus.sem5.kursachisbackend.jwt.JwtUtil;
 import nikolausus.sem5.kursachisbackend.repository.LogsOrdersRepository;
@@ -79,14 +81,13 @@ public class UserController {
             return "Заявка на уже имеющуюся или не существующую роль";
         }
 
-        if (applicationsService.checkApplicationDoesntExists(user_id, roleService.getRoleById(appl.vibor).orElseThrow(() -> new RuntimeException("Роль не найдена")))) {
+        if (applicationsService.checkApplicationDoesntExists(user_id, roleService.getRoleById(appl.vibor))) {
             return "У вас уже есть заявка на эту роль";
         }
 
         Applications applications = applicationsService.createApplication(
                 userService.getUserByLogin(jwtUtil.extractUsername(jwt)).orElseThrow(() -> new RuntimeException("Пользователь не найден")),
-                roleService.getRoleById(appl.vibor).orElseThrow(() -> new RuntimeException("Роль не найдена")),
-                appl.pochemy);
+                roleService.getRoleById(appl.vibor), appl.pochemy);
 
         if (applications != null) {
             logsApplicationsRepository.createLog(user_id, applications.getId());
@@ -207,6 +208,12 @@ public class UserController {
         } catch (Exception e) {
             return e.getMessage();
         }
+    }
+
+    @GetMapping("/test/userDTO")
+    public UserDTO test_get_userDTO(@RequestHeader("Authorization") String jwt) {
+        jwt = jwt.substring(7);
+        return UserMapper.toDTO(userService.getUserByLogin(jwtUtil.extractUsername(jwt)).orElseThrow(() -> new RuntimeException("Пользователь не найден")));
     }
 }
 
