@@ -37,6 +37,7 @@ public class ApplicationsService {
                 return true;
             }
         }
+
         return false;
     }
 
