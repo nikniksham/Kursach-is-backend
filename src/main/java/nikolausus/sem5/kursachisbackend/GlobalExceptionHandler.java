@@ -15,8 +15,24 @@ import org.springframework.web.context.request.WebRequest;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
-    public final String handleAllExceptions(Exception ex, WebRequest request) {
-        System.out.println(ex.getMessage());
-        return ex.getMessage();
+    public ResponseEntity<Response> handleException(Exception e) {
+        Response response = new Response(e.getMessage());
+        System.out.println("!!!!!!! " + e.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+}
+
+
+@Getter
+@Setter
+class Response {
+
+    private String message;
+
+    public Response() {
+    }
+
+    public Response(String message) {
+        this.message = message;
     }
 }

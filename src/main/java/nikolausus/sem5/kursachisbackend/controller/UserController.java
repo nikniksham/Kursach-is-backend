@@ -21,34 +21,26 @@ public class UserController {
     private final UserService userService;
     private final ApplicationsService applicationsService;
     private final RoleService roleService;
-    private final StatusApplicationsService statusApplicationsService;
     private final LogsApplicationsService logsApplicationsService;
     private final JwtUtil jwtUtil;
-    private final UserDetailsService userDetailsService;
     private final CommentOnApplicationsService commentOnApplicationsService;
     private final OrdersService ordersService;
     private final CommentOnOrdersService commentOnOrdersService;
     private final LogsOrdersService logsOrdersService;
-    private final StatusOrdersService statusOrdersService;
 
     public UserController(UserService userService, ApplicationsService applicationsService, JwtUtil jwtUtil,
-                          UserDetailsService userDetailsService, RoleService roleService,
-                          StatusApplicationsService statusApplicationsService, LogsApplicationsService logsApplicationsService,
+                          RoleService roleService, LogsApplicationsService logsApplicationsService,
                           CommentOnApplicationsService commentOnApplicationsService, OrdersService ordersService,
-                          CommentOnOrdersService commentOnOrdersService, LogsOrdersService logsOrdersService,
-                          StatusOrdersService statusOrdersService) {
+                          CommentOnOrdersService commentOnOrdersService, LogsOrdersService logsOrdersService) {
         this.userService = userService;
         this.applicationsService = applicationsService;
         this.jwtUtil = jwtUtil;
-        this.userDetailsService = userDetailsService;
         this.roleService = roleService;
-        this.statusApplicationsService = statusApplicationsService;
         this.logsApplicationsService = logsApplicationsService;
         this.commentOnApplicationsService = commentOnApplicationsService;
         this.ordersService = ordersService;
         this.commentOnOrdersService = commentOnOrdersService;
         this.logsOrdersService = logsOrdersService;
-        this.statusOrdersService = statusOrdersService;
     }
 
     @PostMapping("/application/send")

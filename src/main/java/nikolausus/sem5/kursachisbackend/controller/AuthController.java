@@ -63,12 +63,8 @@ public class AuthController {
         }
         RoleDTO userRole = roleService.getRoleByName("ROLE_SIMPLE");
         roles.add(userRole);
-        try {
-            UserDTO userDTO = userService.createNewUser(authRequest.getLogin(), passwordEncoder.encode(authRequest.getPassword()), roles);
-            return "Успешная регистрация!";
-        } catch (Exception e) {
-            return e.getMessage();
-        }
+        UserDTO userDTO = userService.createNewUser(authRequest.getLogin(), passwordEncoder.encode(authRequest.getPassword()), roles);
+        return "Успешная регистрация!";
     }
 
     @PostMapping("/authenticate")
