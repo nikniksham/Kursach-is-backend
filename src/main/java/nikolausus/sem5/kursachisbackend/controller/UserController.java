@@ -130,8 +130,9 @@ public class UserController {
         try {
             OrdersDTO ordersDTO = ordersService.getOrderById(order_id);
             jwt = jwt.substring(7);
-            if (ordersService.existOnTargetIsu(ord.getTargetIsuNum()) && !Objects.equals(ordersDTO.getTarget_isu_num(), ord.getTargetIsuNum())) {
-                throw new RuntimeException("Заказ на эту цель уже существует");
+            OrdersDTO exOrd = ordersService.getByTargetIsu(ord.getTargetIsuNum());
+            if (exOrd != null && !Objects.equals(ordersDTO.getTarget_isu_num(), ord.getTargetIsuNum())) {
+                throw new RuntimeException(exOrd.getId().toString());
             }
             return ordersService.updateOrder(ord.order_id, userService.getUserByLogin(jwtUtil.extractUsername(jwt)), ord.pochemy, ord.getTargetIsuNum(), ord.getTargetName());
         } catch (Exception e) {
@@ -185,8 +186,9 @@ public class UserController {
     @PostMapping("/orders/create")
     public String createOrder(@RequestHeader("Authorization") String jwt, @RequestBody CreateOrder createOrder) {
         try {
-            if (ordersService.existOnTargetIsu(createOrder.getTargetIsuNum())) {
-                throw new RuntimeException("Заказ на эту цель уже существует");
+            OrdersDTO exOrd = ordersService.getByTargetIsu(createOrder.getTargetIsuNum());
+            if (exOrd != null) {
+                throw new RuntimeException(exOrd.getId().toString());
             }
             jwt = jwt.substring(7);
             UserDTO userDTO = userService.getUserByLogin(jwtUtil.extractUsername(jwt));

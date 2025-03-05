@@ -57,6 +57,17 @@ public class OrdersService {
         return res;
     }
 
+    public OrdersDTO getByTargetIsu(Integer target_isu) {
+        OrdersDTO ordersDTO = null;
+        for (Orders orders : ordersRepository.findAll()) {
+            if (orders.getTarget_isu_num().equals(target_isu)) {
+                ordersDTO = OrdersMapper.toDTO(orders);
+                break;
+            }
+        }
+        return ordersDTO;
+    }
+
     public List<OrdersDTO> getAllOrdersByUserId(UserDTO userDTO) {
         return ordersRepository.getAllByUser(UserMapper.toEntity(userDTO)).stream().map(OrdersMapper::toDTO).collect(Collectors.toList());
     }
