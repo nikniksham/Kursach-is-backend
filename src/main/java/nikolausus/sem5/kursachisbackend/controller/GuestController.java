@@ -23,7 +23,8 @@ public class GuestController {
     public List<OrdersDTO> getAllOrders() {
         List<OrdersDTO> orders = new ArrayList<>();
         for (OrdersDTO ord : ordersService.getAllOrders()) {
-            if (ord.getStatusOrdersDTO().getId() == 3 || ord.getStatusOrdersDTO().getId()== 4 || ord.getStatusOrdersDTO().getId() == 6) {
+            if (ord.getStatusOrdersDTO().getId() == 3 || ord.getStatusOrdersDTO().getId() == 4 ||
+                    ord.getStatusOrdersDTO().getId() == 5 || ord.getStatusOrdersDTO().getId() == 6) {
                 orders.add(ord);
             }
         }
@@ -33,7 +34,7 @@ public class GuestController {
     @GetMapping("/orders/getById")
     public OrdersDTO getOrderById(@RequestParam Long order_id) {
         OrdersDTO ordersDTO = ordersService.getOrderById(order_id);
-        if (ordersDTO.getStatusOrdersDTO().getId() != 3 && ordersDTO.getStatusOrdersDTO().getId() != 4 && ordersDTO.getStatusOrdersDTO().getId() != 6) {
+        if (ordersDTO.getStatusOrdersDTO().getId() != 3 && ordersDTO.getStatusOrdersDTO().getId() != 4 && ordersDTO.getStatusOrdersDTO().getId() != 5 && ordersDTO.getStatusOrdersDTO().getId() != 6) {
             throw new RuntimeException("С таким статусом нельзя");
         }
         return ordersDTO;
