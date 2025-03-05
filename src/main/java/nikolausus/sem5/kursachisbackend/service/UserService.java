@@ -92,4 +92,11 @@ public class UserService {
         user.setRoles(roles.stream().map(RoleMapper::toEntity).collect(Collectors.toSet()));
         return UserMapper.toDTO(userRepository.save(user));
     }
+
+    public String setNewPassword(UserDTO userDTO, String newPassword) {
+        User user = UserMapper.toEntity(userDTO);
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        return "Пароль успешно изменён";
+    }
 }

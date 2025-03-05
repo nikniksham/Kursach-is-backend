@@ -3,12 +3,11 @@ package nikolausus.sem5.kursachisbackend.controller;
 import lombok.Getter;
 import lombok.Setter;
 import nikolausus.sem5.kursachisbackend.DTO.*;
-import nikolausus.sem5.kursachisbackend.Mapper.UserMapper;
 import nikolausus.sem5.kursachisbackend.jwt.JwtUtil;
 import nikolausus.sem5.kursachisbackend.service.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,6 +27,7 @@ public class UserController {
     private final CommentOnOrdersService commentOnOrdersService;
     private final LogsOrdersService logsOrdersService;
 
+
     public UserController(UserService userService, ApplicationsService applicationsService, JwtUtil jwtUtil,
                           RoleService roleService, LogsApplicationsService logsApplicationsService,
                           CommentOnApplicationsService commentOnApplicationsService, OrdersService ordersService,
@@ -41,6 +41,13 @@ public class UserController {
         this.ordersService = ordersService;
         this.commentOnOrdersService = commentOnOrdersService;
         this.logsOrdersService = logsOrdersService;
+    }
+
+    @PostMapping("/set_new_password")
+    public String setNewPassword(@RequestHeader("Authorization") String jwt, @RequestBody AuthRequest authRequest) {
+        jwt = jwt.substring(7);
+        UserDTO userDTO = userService.getUserByLogin(jwtUtil.extractUsername(jwt));
+        return userService.setNewPassword(userDTO, authRequest.getPassword());
     }
 
     @PostMapping("/application/send")
